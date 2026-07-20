@@ -11,21 +11,14 @@ interface AzureModelDef extends ModelDef {
   modelId: string;
 }
 
-const AZURE_OAI_API_VERSION = '2024-10-21';
-
 const AZURE_MODELS: AzureModelDef[] = [
-  { id: 'gpt-5.6-sol',   modelId: 'gpt-5.6-sol',   name: 'OpenAI GPT-5.6 Sol',   maxInputTokens: 1_050_000, maxOutputTokens: 128_000, supportsThinking: true,  supportsImages: true },
-  { id: 'gpt-5.6-terra', modelId: 'gpt-5.6-terra', name: 'OpenAI GPT-5.6 Terra', maxInputTokens: 1_050_000, maxOutputTokens: 128_000, supportsThinking: true,  supportsImages: true },
-  { id: 'gpt-5.6-luna',  modelId: 'gpt-5.6-luna',  name: 'OpenAI GPT-5.6 Luna',  maxInputTokens: 1_050_000, maxOutputTokens: 128_000, supportsThinking: true,  supportsImages: true },
-  { id: 'gpt-5.3-codex', modelId: 'gpt-5.3-codex', name: 'OpenAI GPT-5.3 Codex', maxInputTokens: 1_050_000, maxOutputTokens: 128_000, supportsThinking: true,  supportsImages: false },
-  { id: 'gpt-5.4-mini',  modelId: 'gpt-5.4-mini',  name: 'OpenAI GPT-5.4 Mini',  maxInputTokens: 1_050_000, maxOutputTokens: 128_000, supportsThinking: true,  supportsImages: true },
-  { id: 'gpt-5.4-pro',   modelId: 'gpt-5.4-pro',   name: 'OpenAI GPT-5.4 Pro',   maxInputTokens: 1_050_000, maxOutputTokens: 128_000, supportsThinking: true,  supportsImages: true },
+  { id: 'gpt-5.6-sol', modelId: 'gpt-5.6-sol', name: 'OpenAI GPT-5.6 Sol', maxInputTokens: 1_050_000, maxOutputTokens: 128_000, supportsThinking: true, supportsImages: true },
+  { id: 'gpt-5.6-terra', modelId: 'gpt-5.6-terra', name: 'OpenAI GPT-5.6 Terra', maxInputTokens: 1_050_000, maxOutputTokens: 128_000, supportsThinking: true, supportsImages: true },
+  { id: 'gpt-5.6-luna', modelId: 'gpt-5.6-luna', name: 'OpenAI GPT-5.6 Luna', maxInputTokens: 1_050_000, maxOutputTokens: 128_000, supportsThinking: true, supportsImages: true },
+  { id: 'gpt-5.3-codex', modelId: 'gpt-5.3-codex', name: 'OpenAI GPT-5.3 Codex', maxInputTokens: 1_050_000, maxOutputTokens: 128_000, supportsThinking: true, supportsImages: false },
+  { id: 'gpt-5.4-mini', modelId: 'gpt-5.4-mini', name: 'OpenAI GPT-5.4 Mini', maxInputTokens: 1_050_000, maxOutputTokens: 128_000, supportsThinking: true, supportsImages: true },
+  { id: 'gpt-5.4-pro', modelId: 'gpt-5.4-pro', name: 'OpenAI GPT-5.4 Pro', maxInputTokens: 1_050_000, maxOutputTokens: 128_000, supportsThinking: true, supportsImages: true },
 ];
-
-function isAzureOpenAIEndpoint(endpoint: string): boolean {
-  return /\.openai\.azure\.com/i.test(endpoint);
-}
-
 
 const THINKING_EFFORT_SCHEMA = {
   properties: {
@@ -241,17 +234,10 @@ export class AzureFoundryProvider implements IProvider {
       : undefined;
     const thinkingEffort = options.modelOptions?.['thinkingEffort'] as string | undefined;
 
-    // Azure OpenAI routes via deployment name in the URL; AI Foundry uses model name in the body.
-    const azureOAI = isAzureOpenAIEndpoint(endpoint);
-    const chatBaseURL = azureOAI
-      ? `${endpoint.replace(/\/+$/, '')}/openai/deployments/${entry.modelId}`
-      : endpoint;
-
     const openai = new OpenAI({
-      baseURL: chatBaseURL,
+      baseURL: endpoint,
       apiKey,
       defaultHeaders: { 'api-key': apiKey },
-      ...(azureOAI ? { defaultQuery: { 'api-version': AZURE_OAI_API_VERSION } } : {}),
     });
     const abortController = createAbortController(token);
     this.logger?.info(`Azure AI Foundry: starting request for ${entry.id}`);
